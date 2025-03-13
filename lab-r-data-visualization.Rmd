@@ -1,0 +1,145 @@
+# Lab \| Data Visualization in R
+
+## Load dataset and libraries
+
+Load the Superstore dataset and libraries needed.
+
+```{r}
+super_store <- read.csv("dataset/Sample - Superstore.csv")
+```
+
+```{r}
+#install.packages("VIM")
+library(VIM)
+library(ggplot2)
+library(dplyr)
+library(ggthemes)
+```
+
+## Boxplot
+
+A summary table or boxplot can be useful to visualize the distribution of key variables. Generate a boxplot to visualize Sales and another to visualize Profit.
+
+```{r}
+#Boxplot for Sales
+ggplot(super_store, aes(y=Sales)) +
+  geom_boxplot() +
+  labs(title= "Distribution of Sales", y= "Sales") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+# Boxplot for Profit
+ggplot(super_store, aes(y = Profit)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Profit", 
+       y = "Profit") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## Bar Plots
+
+Create a bar plot to show the top 10 orders with highest value of sales.
+
+```{r}
+top_10_orders <- super_store %>%
+  group_by(Order.ID) %>%
+  summarise(Total_Sales= sum(Sales)) %>%
+  arrange(desc(Total_Sales)) %>%
+  slice_head(n=10)
+print(top_10_orders)
+```
+
+```{r}
+#Barplot Top 10 orders
+ggplot(top_10_orders, aes(x = reorder(`Order.ID`, Total_Sales), y = Total_Sales)) +
+  geom_bar(stat = "identity", fill = "maroon") +
+  coord_flip() +  # Flip for better readability
+  ggtitle("Top 10 Orders with Highest Sales") +
+  xlab("Order ID") +
+  ylab("Total Sales") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## Heatmap
+
+Use a heatmap to visualize the pattern of missing data.
+
+``` r
+# Install and load the VIM package if not already installed
+library(VIM)
+
+# Visualize missing data pattern
+missing_pattern <- aggr(dataset, col=c('navyblue','red'), numbers=TRUE, sortVars=TRUE, labels=names(dataset), cex.axis=.7, gap=3, ylab=c("Missing data","Pattern"))
+```
+
+```{r}
+missing_pattern <- aggr(super_store, 
+                        col=c('navyblue', 'red'), 
+                        numbers=TRUE, 
+                        sortVars=TRUE, 
+                        labels=names(super_store), 
+                        cex.axis=0.7, 
+                        gap=3, 
+                        ylab=c("Missing data", "Pattern"))
+```
+
+## Histogram
+
+Generate a histogram that can show the distribution of the Profit column.
+
+```{r}
+#Histogram Profit
+ggplot(super_store, aes(x=Profit))+
+  geom_histogram(binwidth =140, fill= 'green', color= 'black') +
+  labs(title= "Distribution of Profit", x= "Profit" , y= "Frequency") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+## Bar Plots for Aggregated Data
+
+Generate a bar plot that shows Total Sales by Category and a barplot that shows Profit by Category.
+
+```{r}
+#Total sales by category
+sales_by_category <- super_store %>%
+  group_by(Category) %>%
+  summarise(
+    Total_Sales=sum(Sales)
+  )
+ggplot(sales_by_category, aes(x = Category, y = Total_Sales, fill = Category)) +
+  geom_bar(stat = "identity",color='black') +
+  labs(title = "Total Sales by Category",
+       x = "Category",
+       y = "Total Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5)) +  
+  scale_y_continuous(labels = scales::comma)+
+  scale_fill_brewer(palette = "Set1")
+
+```
+
+```{r}
+#Profit by category
+profit_by_category <- super_store %>%
+  group_by(Category) %>%
+  summarise(
+    Total_Profit= sum(Profit)
+  )
+ggplot(profit_by_category, aes(x = Category, y = Total_Profit, fill = Category)) +
+  geom_bar(stat = "identity", color='black') +
+  labs(title = "Total Profit by Category",
+       x = "Category",
+       y = "Total Profit") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5)) +  
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_brewer(palette = "Set2")
+```
