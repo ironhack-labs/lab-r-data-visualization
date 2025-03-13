@@ -1,0 +1,157 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Lab \| Data Visualization in R
+
+## Load dataset and libraries
+
+Load the Superstore dataset and libraries needed.
+
+```{r}
+library(dplyr) 
+library(ggthemes)
+library(ggplot2)
+
+superstore <- read.csv("Dataset/Sample - Superstore.csv") 
+
+```
+
+## Boxplot
+
+A summary table or boxplot can be useful to visualize the distribution of key variables. Generate a boxplot to visualize Sales and another to visualize Profit
+
+```{r}
+ggplot(superstore, aes(x = Sales)) +
+  geom_boxplot()
+
+ggplot(superstore, aes(x = Profit)) +
+  geom_boxplot()
+
+
+sales_cap_top <- quantile(superstore$Sales, 0.95, na.rm = TRUE)
+sales_cap_bottom <- quantile(superstore$Sales, 0.05, na.rm = TRUE)
+
+profit_cap_top <- quantile(superstore$Profit, 0.95, na.rm = TRUE)
+profit_cap_bottom <- quantile(superstore$Profit, 0.05, na.rm = TRUE)
+print(profit_cap_bottom)
+
+superstore_cap <- superstore %>%
+  mutate(Sales = ifelse(Sales > sales_cap_top, sales_cap_top, 
+                        ifelse(Sales < sales_cap_bottom, sales_cap_bottom, Sales)))
+
+superstore_cap <- superstore_cap %>%
+  mutate(Profit = ifelse(Profit > profit_cap_top, sales_cap_top, 
+                         ifelse(Profit < profit_cap_bottom, sales_cap_bottom, Profit)))
+
+ggplot(superstore_cap, aes(x = Sales)) +
+  geom_boxplot()
+
+ggplot(superstore_cap, aes(x = Profit)) +
+  geom_boxplot()
+
+```
+
+## Bar Plots
+
+Create a bar plot to show the top 10 orders with highest value of sales.
+
+```{r}
+top_orders <- superstore %>%
+  group_by(Order.ID) %>%
+  summarise(Total_sales = sum(Sales)) %>%
+  arrange(desc(Total_sales)) %>%
+  slice(1:10)
+top_orders
+
+ggplot(top_orders, aes(y = reorder(factor(Order.ID), Total_sales), x = Total_sales)) +
+  geom_col(fill = "steelblue") +
+  labs(title = "Top 10 Orders with Highest Sales Value", x = "Total Sales", y = "Order ID") 
+```
+
+## Heatmap
+
+Use a heatmap to visualize the pattern of missing data.
+
+```{r}
+# install.packages("VIM")
+library(VIM)
+
+# Visualize missing data pattern
+missing_pattern <- aggr(superstore, 
+                        col=c('navyblue','red'), 
+                        numbers=TRUE, 
+                        sortVars=TRUE, 
+                        labels=names(superstore), 
+                        cex.axis=.7, gap=3, 
+                        ylab=c("Missing data","Pattern"))
+```
+
+```         
+# Install and load the VIM package if not already installed
+```
+
+## Histogram
+
+Generate a histogram that can show the distribution of the Profit column.
+
+```{r}
+ggplot(superstore, aes(x = Profit)) +
+  geom_histogram(binwidth = 0.5, fill = "lightblue", color = "blue")
+
+ggplot(superstore_cap, aes(x = Profit)) +
+  geom_histogram(binwidth = 0.5, fill = "lightblue", color = "blue")
+
+```
+
+## Bar Plots for Aggregated Data
+
+Generate a bar plot that shows Total Sales by Category and a barplot that shows Profit by Category.
+
+```{r}
+category_sales <- superstore %>%
+  group_by(Category) %>%
+  summarise(
+    Total_Profit = sum(Profit, na.rm = TRUE),
+    Total_Sales = sum(Sales, na.rm = TRUE)
+    
+  )
+category_sales
+
+ggplot(category_sales, aes(x = Category, y = Total_Sales, fill = "red") ) +
+  geom_col() 
+  
+ggplot(category_sales, aes(x = Category, y = Total_Profit, fill = "lightblue") ) +
+  geom_col() 
+```
+
+```{r}
+library(tidyr)
+library(ggplot2)
+
+category_sales_long <- category_sales %>%
+  pivot_longer(cols = c(Total_Sales, Total_Profit), names_to = "Metric", values_to = "Value")
+
+ggplot(category_sales_long, aes(x = Category, y = Value, fill = Metric)) +
+  geom_col(position = position_stack(reverse = TRUE)) +
+  scale_fill_manual(values = c("Total_Profit" = "lightblue", "Total_Sales" = "red")) +
+  labs(title = "Total Sales and Total Profit by Category", x = "Category", y = "Value") +
+  theme_minimal()
+```
+
+## Deliverables
+
+-   Submitted notebook (or file) with your responses to each of the exercises.
+
+## Submission
+
+-   Upon completion, add your deliverables to git.
+
+-   Then commit git and push your branch to the remote.
+
+-   Make a pull request and paste the PR link in the submission field in the Student Portal.
+
+\
+
+**Good luck!**
