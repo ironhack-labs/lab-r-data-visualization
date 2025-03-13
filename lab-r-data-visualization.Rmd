@@ -1,0 +1,174 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+![logo_ironhack_blue 7](https://user-images.githubusercontent.com/23629340/40541063-a07a0a8a-601a-11e8-91b5-2f13e4e6b441.png)
+
+# Lab \| Data Visualization in R
+
+## Load dataset and libraries
+
+Load the Superstore dataset and libraries needed.
+
+```{r}
+
+library(ggplot2)
+library(dplyr)
+#library(titanic)
+library(readr)
+
+# Loading the Dataset
+df <- read.csv("/Users/guillermo/Documents/Ironhack/Datasets/Sample - Superstore/Sample - Superstore.csv")
+
+```
+
+```{r}
+str(df)
+summary(df)
+```
+
+## Boxplot
+
+A summary table or boxplot can be useful to visualize the distribution of key variables. Generate a boxplot to visualize Sales and another to visualizr Profit.
+
+```{r}
+# Boxplot for Sales using ggplot2
+ggplot(df, aes(y = Sales)) +
+  geom_boxplot() +
+  ggtitle("Boxplot of Sales") +
+  ylab("Sales")
+
+
+```
+
+```{r}
+
+# Boxplot for Profit using ggplot2
+ggplot(df, aes(y = Profit)) +
+  geom_boxplot() +
+  ggtitle("Boxplot of Profit") +
+  ylab("Profit")
+```
+
+## Bar Plots
+
+Create a bar plot to show the top 10 orders with highest value of sales.
+
+```{r}
+sorted_df <- arrange(df, desc(Sales))
+#sorted_df <- head(df, 10)
+order_totals <- df %>%
+  group_by(Order.ID) %>%
+  summarize(Total_Sales = sum(Sales))
+
+# Sort by Total_Sales in descending order
+sorted_order_totals <- order_totals %>%
+  arrange(desc(Total_Sales))
+
+# Extract the top 10 orders
+top_10_orders <- head(sorted_order_totals, 10)
+
+```
+
+```{r}
+# Create a bar plot using ggplot2
+ggplot(top_10_orders, aes(x = reorder(Order.ID, Total_Sales), y = Total_Sales)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Top 10 Orders by Total Sales", 
+       x = "Order ID", 
+       y = "Total Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+## Heatmap
+
+Use a heatmap to visualize the pattern of missing data.
+
+```{r}
+# Install and load the VIM package if not already installed
+# install.packages("VIM")
+library(VIM)
+```
+
+```{r}
+# Check for missing values in the dataset
+colSums(is.na(df))
+```
+
+```{r}
+# Visualize missing data pattern
+missing_pattern <- aggr(df,
+                        col=c('navyblue','red'), 
+                        numbers=TRUE,
+                        sortVars=TRUE,
+                        labels=names(df),
+                        cex.axis=.7,
+                        gap=3,
+                        ylab=c("Missing data","Pattern"))
+```
+
+
+```{r}
+# Copy your dataset to avoid modifying the original
+df_with_missing <- df
+
+# Introduce missing values in some columns
+set.seed(123)  # For reproducibility
+df_with_missing$Sales[sample(1:nrow(df), 10)] <- NA  # 10 random missing values in Sales
+df_with_missing$Profit[sample(1:nrow(df), 15)] <- NA  # 15 random missing values in Profit
+df_with_missing$Discount[sample(1:nrow(df), 2000)] <- NA  # 20 random missing values in Discount
+```
+
+```{r}
+# Check for missing values in the dataset
+colSums(is.na(df_with_missing))
+```
+
+```{r}
+# Visualize missing data pattern
+missing_pattern <- aggr(df_with_missing,
+                        col=c('navyblue','red'), 
+                        numbers=TRUE,
+                        sortVars=TRUE,
+                        labels=names(df),
+                        cex.axis=.7,
+                        gap=3,
+                        ylab=c("Missing data","Pattern"))
+```
+
+
+## Histogram
+
+Generate a histogram that can show the distribution of the Profit column.
+
+```{r}
+ggplot(df, aes(x = Profit)) +
+  geom_histogram(binwidth = 50, fill = "blue", color = "black") +
+  labs(title = "show the distribution of the Profit column", x = "Profit", y = "Count")+
+  theme_minimal()
+```
+
+## Bar Plots for Aggregated Data
+
+Generate a bar plot that shows Total Sales by Category and a barplot that shows Profit by Category.
+
+```{r}
+category_total_sales <- df %>%
+  group_by(Category) %>%
+  summarize(Total_Sales = sum(Sales))
+ggplot(category_total_sales, aes(x= Category, y = Total_Sales)) +
+  geom_col(fill = "steelblue") +      # Use a fixed color instead of mapping to a variable
+labs(title = "Total Sales by Category", x = "Category", y = "Total Sales")
+```
+
+```{r}
+category_total_profit <- df %>%
+  group_by(Category) %>%
+  summarize(Total_Profits = sum(Profit))
+ggplot(category_total_profit, aes(x= Category, y = Total_Profits)) +
+  geom_col(fill = "steelblue") +      # Use a fixed color instead of mapping to a variable
+labs(title = "Total Sales by Category", x = "Category", y = "Total Sales")
+```
