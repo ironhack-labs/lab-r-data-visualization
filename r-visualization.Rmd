@@ -1,0 +1,72 @@
+# Lab \| Data Visualization in R
+
+### Load dataset and libraries
+
+```{r}
+library(tidyverse)
+superstore <- read.csv("dataset/Sample - Superstore.csv")
+```
+
+------------------------------------------------------------------------
+
+### Boxplots to visualize Sales and Profit
+
+```{r}
+ggplot(superstore, aes(x = "", y = Sales)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Sales", x = "", y = "Sales")
+```
+
+```{r}
+ggplot(superstore, aes(x = "", y = Profit)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Profit", x = "", y = "Profit")
+```
+
+------------------------------------------------------------------------
+
+### Bar Plot for Top 10 Orders with highest Sales
+
+```{r}
+ggplot(superstore %>% arrange(desc(Sales)) %>% slice_head(n = 10), aes(x = reorder(Order.ID, Sales), y = Sales, fill = Sales)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
+  labs(title = "Top 10 Orders with highest Sales", x = "Order ID", y = "Sales") +
+  theme_minimal()
+```
+
+------------------------------------------------------------------------
+
+### Heatmap for missing data
+
+Once again, there is no missing data
+
+------------------------------------------------------------------------
+
+### Histogram for Distribution of Profit
+
+```{r}
+ggplot(superstore, aes(x = Profit)) +
+  geom_histogram(binwidth = 500, fill = "steelblue", color = "black") +
+  labs(title = "Distribution of Profit", x = "Profit", y = "Count") +
+  theme_minimal()
+```
+
+------------------------------------------------------------------------
+
+### Bar Plots for Aggregated Data
+
+```{r}
+ggplot(superstore, aes(x = Category, y = Sales, fill = Category)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Sales by Category", x = "Category", y = "Total Sales") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(superstore, aes(x = Category, y = Profit, fill = Category)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Profit by Category", x = "Category", y = "Total Profit") +
+  theme_minimal()
+```
